@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Complete Profile — CampusResolve</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #E8521A; --primary-dark: #C43E0D; --primary-light: #FF6B35;
+    --accent: #1A1A2E; --surface: #FFFFFF; --surface-2: #F8F7F4; --surface-3: #F0EDE8;
+    --text: #1A1A1A; --text-2: #5A5A6A; --text-3: #9A9AAA; --border: #E4E2DC;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; min-height: 100vh; background: var(--surface-2); display: flex; flex-direction: column; }
+  h1,h2,h3 { font-family: 'Syne', sans-serif; }
+
+  /* TOP BAR */
+  .top-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .brand-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+  .brand-text h1 { font-size: 16px; color: var(--text); font-weight: 700; }
+  .brand-text p { font-size: 11px; color: var(--text-3); }
+  .step-indicator { display: flex; align-items: center; gap: 0; }
+  .step-dot { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .step-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; font-family: 'Syne', sans-serif; }
+  .step-circle.done { background: var(--primary); color: white; }
+  .step-circle.active { background: var(--primary); color: white; box-shadow: 0 0 0 4px rgba(232,82,26,0.2); }
+  .step-circle.pending { background: var(--surface-3); color: var(--text-3); }
+  .step-label { font-size: 10px; color: var(--text-3); white-space: nowrap; }
+  .step-line { width: 48px; height: 2px; background: var(--border); margin-bottom: 16px; }
+  .step-line.done { background: var(--primary); }
+
+  /* MAIN */
+  .page-main { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 40px 24px; }
+  .profile-container { width: min(100%, 1200px); }
+  .page-header { margin-bottom: 32px; }
+  .page-header h2 { font-size: 30px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+  .page-header p { font-size: 14px; color: var(--text-3); margin-top: 6px; }
+
+  /* AVATAR UPLOAD */
+  .avatar-section { display: flex; align-items: center; gap: 20px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 16px; padding: 20px 24px; margin-bottom: 24px; }
+  .avatar-preview { width: 72px; height: 72px; border-radius: 18px; background: linear-gradient(135deg, var(--primary), #FF9560); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; color: white; font-family: 'Syne', sans-serif; flex-shrink: 0; position: relative; overflow: hidden; cursor: pointer; }
+  .avatar-preview img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .avatar-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+  .avatar-preview:hover .avatar-overlay { opacity: 1; }
+  .avatar-info h3 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .avatar-info p { font-size: 12.5px; color: var(--text-3); }
+  .avatar-btn { margin-top: 8px; font-size: 12.5px; font-weight: 600; color: var(--primary); background: none; border: 1.5px solid rgba(232,82,26,0.3); border-radius: 7px; padding: 5px 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+  .avatar-btn:hover { background: rgba(232,82,26,0.06); border-color: var(--primary); }
+
+  /* FORM CARD */
+  .form-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 18px; }
+  .card-section-title { font-size: 13px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-3); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .card-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .required { color: var(--primary); }
+  .input-wrap { position: relative; }
+  .input-wrap svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-3); pointer-events: none; }
+  .form-input, .form-select { width: 100%; border: 1.5px solid var(--border); border-radius: 11px; padding: 11px 14px 11px 40px; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface); transition: all 0.2s; }
+  .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239A9AAA' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+  .form-input:focus, .form-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(232,82,26,0.1); }
+  .form-hint { font-size: 11.5px; color: var(--text-3); }
+
+  /* SUBMIT */
+  .submit-area { display: flex; align-items: center; justify-content: space-between; background: var(--surface); border: 1.5px solid var(--border); border-radius: 16px; padding: 20px 24px; }
+  .submit-note { font-size: 13px; color: var(--text-3); max-width: 340px; line-height: 1.55; }
+  .submit-note strong { color: var(--text-2); }
+  .btn-save { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none; border-radius: 11px; padding: 13px 32px; font-size: 15px; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.25s; box-shadow: 0 4px 14px rgba(232,82,26,0.3); display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .btn-save:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(232,82,26,0.4); }
+  .loading-spinner { display: none; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.35); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .form-card, .avatar-section, .submit-area { animation: fadeInUp 0.4s ease both; }
+  .form-card:nth-child(2) { animation-delay: 0.05s; }
+  .form-card:nth-child(3) { animation-delay: 0.1s; }
+  .submit-area { animation-delay: 0.15s; }
+
+  /* ROLE BADGE */
+  .role-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(232,82,26,0.1); color: var(--primary); border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 700; font-family: 'Syne', sans-serif; border: 1px solid rgba(232,82,26,0.2); margin-left: 10px; }
+
+  @media(max-width:900px) {
+    .page-main { padding: 28px 18px; }
+    .avatar-section { padding: 18px; }
+    .submit-note { max-width: 100%; }
+  }
+  @media(max-width:600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .submit-area { flex-direction: column; gap: 14px; align-items: stretch; }
+    .top-bar { padding: 12px 16px; }
+    .page-main { padding: 20px 12px 28px; }
+    .form-card, .avatar-section, .submit-area { padding-left: 16px; padding-right: 16px; }
+    .avatar-section { flex-direction: column; align-items: flex-start; }
+    .step-indicator { width: 100%; justify-content: flex-start; overflow-x: auto; padding-bottom: 4px; }
+    .btn-save { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <a href="index.html" class="brand">
+    <div class="brand-icon">🏫</div>
+    <div class="brand-text">
+      <h1>CampusResolve</h1>
+      <p>Every issue heard, every issue tracked.</p>
+    </div>
+  </a>
+
+  <div class="step-indicator">
+    <div class="step-dot">
+      <div class="step-circle done">✓</div>
+      <div class="step-label">Account</div>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step-dot">
+      <div class="step-circle active">2</div>
+      <div class="step-label">Profile</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-dot">
+      <div class="step-circle pending">3</div>
+      <div class="step-label">Done</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="page-main">
+  <div class="profile-container">
+
+    <div class="page-header">
+      <h2>Complete your profile
+        <span class="role-badge" id="roleBadge">🎓 Student</span>
+      </h2>
+      <p>This information helps us verify your identity and route complaints to the right department.</p>
+    </div>
+
+    <!-- AVATAR -->
+    <div class="avatar-section">
+      <div class="avatar-preview" onclick="document.getElementById('photoInput').click()" id="avatarPreview">
+        <span id="avatarInitials">?</span>
+        <div class="avatar-overlay">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <img id="avatarImg" src="" style="display:none">
+      </div>
+      <div class="avatar-info">
+        <h3>Profile Photo</h3>
+        <p>Upload a clear photo for your profile. This is visible to admins only, not publicly.</p>
+        <button class="avatar-btn" onclick="document.getElementById('photoInput').click()">📷 Upload Photo</button>
+        <input type="file" id="photoInput" accept="image/*" hidden onchange="previewPhoto(this)">
+      </div>
+    </div>
+
+    <form id="profileForm" novalidate>
+
+      <!-- PERSONAL INFO -->
+      <div class="form-card">
+        <div class="card-section-title">Personal Information</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Full Name <span class="required">*</span></label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              <input type="text" id="fullName" class="form-input" placeholder="As per college records">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mobile Number <span class="required">*</span></label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              <input type="tel" id="mobile" class="form-input" placeholder="10-digit mobile number">
+            </div>
+            <span class="form-hint">Used for OTP verification of complaints</span>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Department <span class="required">*</span></label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <select id="department" class="form-select">
+                <option value="">Select your department</option>
+                <option>Computer Engineering</option>
+                <option>Information Technology</option>
+                <option>Electronics & Telecommunication</option>
+                <option>Mechanical Engineering</option>
+                <option>Civil Engineering</option>
+                <option>Electrical Engineering</option>
+                <option>Chemical Engineering</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STUDENT FIELDS -->
+      <div class="form-card" id="studentFields">
+        <div class="card-section-title">Academic Details</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Branch / Specialization</label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <input type="text" id="branch" class="form-input" placeholder="e.g. Artificial Intelligence">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Year of Study <span class="required">*</span></label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <select id="year" class="form-select">
+                <option value="">Select year</option>
+                <option value="1">First Year (FE)</option>
+                <option value="2">Second Year (SE)</option>
+                <option value="3">Third Year (TE)</option>
+                <option value="4">Fourth Year (BE)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Division / Section</label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <input type="text" id="division" class="form-input" placeholder="e.g. A, B, C">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Roll Number</label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              <input type="text" id="rollNo" class="form-input" placeholder="e.g. 2023CSE0042">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAFF FIELDS -->
+      <div class="form-card hidden" id="staffFields">
+        <div class="card-section-title">Staff Details</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Designation / Position <span class="required">*</span></label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              <input type="text" id="position" class="form-input" placeholder="e.g. Associate Professor">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Employee ID</label>
+            <div class="input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              <input type="text" id="empId" class="form-input" placeholder="Staff ID / Employee No.">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+
+    <!-- SUBMIT AREA -->
+    <div class="submit-area">
+      <p class="submit-note">
+        <strong>Almost done!</strong> Your profile information is kept secure and is only used to verify your identity and route your complaints to the correct department.
+      </p>
+      <button class="btn-save" onclick="saveProfile()">
+        <span id="saveBtnText">Save & Continue</span>
+        <div class="loading-spinner" id="saveSpinner"></div>
+        <svg id="saveArrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/auth-guard.js"></script>
+<script>
+  // Must be logged in to access this page
+  CR.requireLogin();
+
+  const currentUser = CR.getSession();
+
+  // Show role badge
+  document.getElementById('roleBadge').textContent = '🎓 Student';
+
+  // Avatar initials
+  if (currentUser?.email) {
+    document.getElementById('avatarInitials').textContent = currentUser.email.charAt(0).toUpperCase();
+  }
+
+  // Prefill saved profile data so reopening this page reflects what is already in the database/session.
+  if (currentUser) {
+    document.getElementById('fullName').value = currentUser.name || '';
+    document.getElementById('mobile').value = currentUser.mobile || '';
+    document.getElementById('department').value = currentUser.department || '';
+    document.getElementById('branch').value = currentUser.branch || '';
+    document.getElementById('year').value = currentUser.year || '';
+    document.getElementById('division').value = currentUser.division || '';
+    document.getElementById('rollNo').value = currentUser.rollNo || '';
+    document.getElementById('position').value = currentUser.position || '';
+    document.getElementById('empId').value = currentUser.empId || '';
+    if (currentUser.name) {
+      document.getElementById('avatarInitials').textContent = currentUser.name.charAt(0).toUpperCase();
+    }
+  }
+
+  document.getElementById('fullName')?.addEventListener('input', function() {
+    const name = this.value.trim();
+    document.getElementById('avatarInitials').textContent = name ? name.charAt(0).toUpperCase() : '?';
+  });
+
+  function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.getElementById('avatarImg');
+        img.src = e.target.result;
+        img.style.display = 'block';
+        document.getElementById('avatarInitials').style.display = 'none';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  async function saveProfile() {
+    const fullName   = document.getElementById('fullName').value.trim();
+    const mobile     = document.getElementById('mobile').value.trim();
+    const department = document.getElementById('department').value;
+
+    if (!fullName || !mobile || !department) {
+      alert('Please fill in all required fields (Name, Mobile, Department).');
+      return;
+    }
+    if (!/^[6-9]\d{9}$/.test(mobile)) {
+      alert('Please enter a valid 10-digit Indian mobile number.');
+      return;
+    }
+
+    document.getElementById('saveBtnText').textContent = 'Saving...';
+    document.getElementById('saveSpinner').style.display = 'block';
+    document.getElementById('saveArrow').style.display   = 'none';
+
+    const profileData = {
+      id:         currentUser.id,
+      name:       fullName,
+      mobile,
+      department,
+      branch:     document.getElementById('branch')?.value    || '',
+      year:       document.getElementById('year')?.value      || '',
+      division:   document.getElementById('division')?.value  || '',
+      rollNo:     document.getElementById('rollNo')?.value    || '',
+      position:   document.getElementById('position')?.value  || '',
+      empId:      document.getElementById('empId')?.value     || '',
+    };
+
+    const result = await CR.updateProfile(profileData);
+    if (!result.ok) {
+      alert(result.error || 'Could not save your profile right now.');
+      document.getElementById('saveBtnText').textContent = 'Save & Continue';
+      document.getElementById('saveSpinner').style.display = 'none';
+      document.getElementById('saveArrow').style.display   = '';
+      return;
+    }
+
+    setTimeout(() => {
+      window.location.href = 'profile.html';
+    }, 900);
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') saveProfile(); });
+</script>
+</body>
+</html>

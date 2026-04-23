@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard — CampusResolve</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary:#E8521A; --primary-light:#FF6B35; --accent:#1A1A2E;
+    --surface:#FFFFFF; --surface-2:#F8F7F4; --surface-3:#F0EDE8;
+    --text:#1A1A1A; --text-2:#5A5A6A; --text-3:#9A9AAA; --border:#E4E2DC;
+    --open:#E8521A; --review:#F59E0B; --assigned:#3B82F6; --resolved:#10B981;
+    --shadow-sm:0 1px 3px rgba(0,0,0,0.06); --shadow-md:0 4px 16px rgba(0,0,0,0.08);
+    --shadow-lg:0 12px 40px rgba(0,0,0,0.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--surface-2);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+  h1,h2,h3,h4{font-family:'Syne',sans-serif;}
+
+  /* ---- TOPBAR ---- */
+  .topbar{background:var(--accent);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.25);}
+  .topbar-brand{display:flex;align-items:center;gap:10px;}
+  .topbar-logo{width:34px;height:34px;background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .topbar-brand h1{font-size:16px;color:#fff;font-weight:800;}
+  .topbar-badge{font-size:10px;font-weight:700;background:var(--primary);color:#fff;padding:2px 8px;border-radius:20px;margin-left:6px;letter-spacing:.5px;}
+  .topbar-right{display:flex;align-items:center;gap:14px;}
+  .topbar-notif-wrap{position:relative;}
+  .topbar-notif{position:relative;width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.08);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;}
+  .topbar-notif:hover{background:rgba(255,255,255,0.16);}
+  .topbar-bell-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--primary);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--accent);}
+  .notif-panel{position:absolute;right:0;top:calc(100% + 10px);width:340px;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);overflow:hidden;z-index:300;}
+  .notif-header{padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .notif-header h3{font-size:14px;font-weight:800;color:var(--text);}
+  .notif-header button{font-size:12px;color:var(--primary);background:none;border:none;cursor:pointer;font-weight:600;}
+  .notif-item{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);}
+  .notif-item:last-child{border-bottom:none;}
+  .notif-item.unread{background:rgba(232,82,26,.04);}
+  .notif-icon{width:34px;height:34px;border-radius:9px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
+  .notif-content p{font-size:13px;color:var(--text-2);line-height:1.45;}
+  .notif-content span{font-size:11px;color:var(--text-3);}
+  .notif-dot{width:7px;height:7px;border-radius:50%;background:var(--primary);margin-top:6px;flex-shrink:0;}
+  .admin-info{text-align:right;}
+  .admin-info .aname{font-size:13px;font-weight:700;color:#fff;}
+  .admin-info .arole{font-size:11px;color:rgba(255,255,255,0.5);}
+  .avatar-sm{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;}
+  .btn-logout{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.8);border-radius:8px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+  .btn-logout:hover{background:rgba(255,255,255,0.18);color:#fff;}
+
+  /* ---- LAYOUT ---- */
+  .layout{display:flex;flex:1;}
+
+  /* ---- SIDEBAR ---- */
+  .sidebar{width:220px;background:var(--surface);border-right:1.5px solid var(--border);display:flex;flex-direction:column;padding:20px 0;flex-shrink:0;}
+  .nav-section-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-3);padding:0 20px;margin:16px 0 6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13.5px;font-weight:500;color:var(--text-2);cursor:pointer;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;border-left:3px solid transparent;}
+  .nav-item:hover{background:var(--surface-2);color:var(--text);}
+  .nav-item.active{background:rgba(232,82,26,0.08);color:var(--primary);font-weight:700;border-left-color:var(--primary);}
+  .nav-item svg{flex-shrink:0;}
+  .nav-count{margin-left:auto;font-size:11px;background:var(--surface-3);padding:1px 7px;border-radius:20px;color:var(--text-3);font-weight:700;}
+  .nav-item.active .nav-count{background:rgba(232,82,26,0.15);color:var(--primary);}
+
+  /* ---- MAIN CONTENT ---- */
+  .main{flex:1;padding:28px;overflow-y:auto;}
+  .page{display:none;}
+  .page.active{display:block;}
+  .page-title{font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px;}
+  .page-sub{font-size:14px;color:var(--text-3);margin-bottom:24px;}
+
+  /* ---- STAT CARDS ---- */
+  .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+  .stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
+  .stat-card::after{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;opacity:.06;}
+  .stat-card.s-total::after{background:#1A1A2E;}
+  .stat-card.s-open::after{background:var(--open);}
+  .stat-card.s-review::after{background:var(--review);}
+  .stat-card.s-resolved::after{background:var(--resolved);}
+  .stat-label{font-size:12px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+  .stat-num{font-size:32px;font-weight:800;font-family:'Syne',sans-serif;line-height:1;}
+  .stat-sub{font-size:12px;color:var(--text-3);margin-top:6px;}
+  .stat-card.s-total .stat-num{color:var(--accent);}
+  .stat-card.s-open .stat-num{color:var(--open);}
+  .stat-card.s-review .stat-num{color:var(--review);}
+  .stat-card.s-resolved .stat-num{color:var(--resolved);}
+
+  /* ---- TOOLBAR ---- */
+  .toolbar{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+  .search-wrap{position:relative;flex:1;min-width:220px;}
+  .search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-3);}
+  .search-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:9px 14px 9px 36px;font-size:14px;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);transition:all .2s;}
+  .search-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(232,82,26,.1);}
+  .filter-select{border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);cursor:pointer;}
+  .filter-select:focus{outline:none;border-color:var(--primary);}
+
+  /* ---- TABLE ---- */
+  .table-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm);}
+  table{width:100%;border-collapse:collapse;}
+  thead th{background:var(--surface-2);font-size:11.5px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.6px;padding:12px 16px;text-align:left;border-bottom:1.5px solid var(--border);}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:var(--surface-2);}
+  tbody td{padding:13px 16px;font-size:13.5px;color:var(--text-2);vertical-align:middle;}
+  .td-title{font-weight:600;color:var(--text);max-width:260px;}
+  .td-title p{font-size:12px;font-weight:400;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px;}
+
+  /* ---- BADGES ---- */
+  .badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
+  .b-open{background:rgba(232,82,26,.12);color:var(--open);}
+  .b-under_review{background:rgba(245,158,11,.12);color:var(--review);}
+  .b-assigned{background:rgba(59,130,246,.12);color:var(--assigned);}
+  .b-resolved{background:rgba(16,185,129,.12);color:var(--resolved);}
+
+  /* ---- ACTION BTNS ---- */
+  .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border:none;border-radius:9px;padding:8px 16px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(232,82,26,.25);}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(232,82,26,.35);}
+  .btn-ghost{background:none;border:1.5px solid var(--border);border-radius:9px;padding:7px 14px;font-size:13px;font-weight:600;color:var(--text-2);font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;}
+  .btn-ghost:hover{border-color:var(--primary);color:var(--primary);}
+  .action-icon{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-3);transition:all .15s;}
+  .action-icon:hover{border-color:var(--primary);color:var(--primary);}
+
+  /* ---- MODAL ---- */
+  .modal-bg{position:fixed;inset:0;background:rgba(10,10,20,.6);backdrop-filter:blur(4px);z-index:500;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .25s;}
+  .modal-bg.open{opacity:1;pointer-events:all;}
+  .modal{background:var(--surface);border-radius:18px;width:100%;max-width:600px;box-shadow:var(--shadow-lg);transform:translateY(20px);transition:transform .3s;max-height:88vh;overflow-y:auto;}
+  .modal-bg.open .modal{transform:translateY(0);}
+  .modal-head{padding:22px 26px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
+  .modal-head h2{font-size:18px;font-weight:800;}
+  .modal-close{width:30px;height:30px;border-radius:8px;border:1.5px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:16px;transition:all .15s;}
+  .modal-close:hover{background:var(--surface-2);}
+  .modal-body{padding:22px 26px;}
+  .modal-foot{padding:16px 26px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}
+
+  /* ---- FORM ELEMENTS ---- */
+  .form-group{margin-bottom:16px;}
+  .form-label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;}
+  .form-input,.form-select,.form-textarea{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--surface);transition:all .2s;}
+  .form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(232,82,26,.1);}
+  .form-textarea{resize:vertical;min-height:90px;}
+  .form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239A9AAA' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;}
+
+  /* ---- DETAIL MODAL SECTIONS ---- */
+  .detail-section{margin-bottom:20px;}
+  .detail-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-3);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .detail-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+  .detail-row{display:flex;gap:8px;margin-bottom:8px;font-size:13.5px;}
+  .detail-key{font-weight:600;color:var(--text-2);min-width:130px;flex-shrink:0;}
+  .detail-val{color:var(--text);}
+  .complaint-desc-box{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:13.5px;color:var(--text-2);line-height:1.65;}
+  .author-reveal{background:rgba(232,82,26,.06);border:1.5px solid rgba(232,82,26,.2);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;}
+  .author-reveal-icon{font-size:20px;}
+  .author-reveal-info .label{font-size:11px;color:var(--primary);font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+  .author-reveal-info .name{font-size:14px;font-weight:700;color:var(--text);margin-top:2px;}
+  .author-reveal-info .meta{font-size:12px;color:var(--text-3);}
+  .note-item{background:var(--surface-2);border-left:3px solid var(--primary);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:8px;}
+  .note-item .note-by{font-size:12px;font-weight:700;color:var(--primary);}
+  .note-item .note-text{font-size:13px;color:var(--text-2);margin-top:3px;line-height:1.5;}
+  .note-item .note-time{font-size:11px;color:var(--text-3);margin-top:4px;}
+  .empty-notes{font-size:13px;color:var(--text-3);font-style:italic;padding:8px 0;}
+  .file-chip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);text-decoration:none;color:var(--text);font-size:13px;font-weight:600;}
+  .file-chip:hover{border-color:var(--primary);color:var(--primary);}
+  .file-grid{display:flex;flex-wrap:wrap;gap:10px;}
+  .field-hint{font-size:11.5px;color:var(--text-3);margin-top:6px;}
+
+  /* ---- TOAST ---- */
+  .toast{position:fixed;bottom:28px;right:28px;background:var(--accent);color:#fff;padding:13px 20px;border-radius:12px;font-size:13.5px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:9999;animation:fadeUp .3s ease;font-family:'DM Sans',sans-serif;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeInCard{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .stat-card{animation:fadeInCard .4s ease both;}
+  .stat-card:nth-child(1){animation-delay:.05s}
+  .stat-card:nth-child(2){animation-delay:.1s}
+  .stat-card:nth-child(3){animation-delay:.15s}
+  .stat-card:nth-child(4){animation-delay:.2s}
+
+  .empty-row td{text-align:center;padding:48px;color:var(--text-3);font-size:14px;}
+  .tag-anon{font-size:11px;background:rgba(239,68,68,.1);color:#DC2626;padding:2px 7px;border-radius:5px;font-weight:600;margin-left:4px;}
+
+  /* ---- RECENT ACTIVITY ---- */
+  .activity-list{display:flex;flex-direction:column;gap:0;}
+  .activity-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+  .activity-item:last-child{border-bottom:none;}
+  .activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+  .activity-text{font-size:13px;color:var(--text-2);flex:1;line-height:1.45;}
+  .activity-time{font-size:11px;color:var(--text-3);white-space:nowrap;}
+
+  @media(max-width:1180px){
+    .stat-row{grid-template-columns:repeat(2,1fr);}
+    .main{padding:22px;}
+  }
+  @media(max-width:960px){
+    .topbar{height:auto;padding:12px 18px;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+    .topbar-right{width:100%;justify-content:space-between;flex-wrap:wrap;}
+    .layout{flex-direction:column;}
+    .sidebar{width:100%;border-right:none;border-bottom:1.5px solid var(--border);flex-direction:row;align-items:center;gap:6px;padding:12px 10px;overflow-x:auto;}
+    .nav-section-label{display:none;}
+    .nav-item{width:auto;white-space:nowrap;border-left:none;border-bottom:3px solid transparent;border-radius:10px;padding:10px 14px;}
+    .nav-item.active{border-left-color:transparent;border-bottom-color:var(--primary);}
+    .main{padding:18px;}
+    .table-wrap{overflow-x:auto;}
+    table{min-width:760px;}
+  }
+  @media(max-width:640px){
+    .main{padding:14px;}
+    .page-title{font-size:20px;}
+    .page-sub{font-size:13px;}
+    .stat-row{grid-template-columns:1fr;}
+    .toolbar{flex-direction:column;align-items:stretch;}
+    .search-wrap,.filter-select{min-width:0;width:100%;}
+    .notif-panel{right:-8px;width:min(340px,calc(100vw - 28px));}
+    .modal-bg{padding:12px;}
+    .modal{max-height:92vh;}
+    .modal-head,.modal-body,.modal-foot{padding-left:16px;padding-right:16px;}
+    .detail-row{flex-direction:column;gap:4px;}
+    .detail-key{min-width:0;}
+  }
+
+  .hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">🏫</div>
+    <h1>CampusResolve</h1>
+    <span class="topbar-badge" id="roleBadge">ADMIN</span>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-notif-wrap">
+      <button class="topbar-notif" onclick="toggleNotifPanel()" title="Notifications">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="topbar-bell-badge hidden" id="adminNotifBadge">0</span>
+      </button>
+      <div class="notif-panel hidden" id="adminNotifPanel">
+        <div class="notif-header">
+          <h3>Notifications</h3>
+          <button onclick="markAdminNotificationsRead()">Mark all read</button>
+        </div>
+        <div id="adminNotifList">
+          <div class="notif-item">
+            <div class="notif-content" style="flex:1">
+              <p>Loading notifications...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="admin-info">
+      <div class="aname" id="adminName">Admin</div>
+      <div class="arole" id="adminDept">Administration</div>
+    </div>
+    <div class="avatar-sm" id="adminAvatar">A</div>
+    <button class="btn-logout" onclick="CR.logout()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;margin-right:4px;vertical-align:middle"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="nav-section-label">Overview</div>
+    <button class="nav-item active" onclick="showPage('dashboard', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+
+    <div class="nav-section-label">Complaints</div>
+    <button class="nav-item" onclick="showPage('all', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      All Complaints
+      <span class="nav-count" id="navCountAll">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('open', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Open
+      <span class="nav-count" id="navCountOpen">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('under_review', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Under Review
+      <span class="nav-count" id="navCountReview">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('assigned', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Assigned
+      <span class="nav-count" id="navCountAssigned">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('resolved', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      Resolved
+      <span class="nav-count" id="navCountResolved">0</span>
+    </button>
+    <button class="nav-item hidden" id="navUsersBtn" onclick="showPage('users', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Users
+    </button>
+
+    <div class="nav-section-label" style="margin-top:auto">Account</div>
+    <button class="nav-item" onclick="CR.logout()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </button>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ===== DASHBOARD PAGE ===== -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">Welcome back — here's what's happening on campus today.</div>
+
+      <div class="stat-row">
+        <div class="stat-card s-total">
+          <div class="stat-label">Total Complaints</div>
+          <div class="stat-num" id="ds-total">0</div>
+          <div class="stat-sub">All time</div>
+        </div>
+        <div class="stat-card s-open">
+          <div class="stat-label">Open</div>
+          <div class="stat-num" id="ds-open">0</div>
+          <div class="stat-sub">Needs attention</div>
+        </div>
+        <div class="stat-card s-review">
+          <div class="stat-label">Under Review</div>
+          <div class="stat-num" id="ds-review">0</div>
+          <div class="stat-sub" style="color:var(--review)">In progress</div>
+        </div>
+        <div class="stat-card s-resolved">
+          <div class="stat-label">Resolved</div>
+          <div class="stat-num" id="ds-resolved">0</div>
+          <div class="stat-sub" style="color:var(--resolved)">Completed</div>
+        </div>
+      </div>
+
+      <!-- Recent complaints on dashboard -->
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">
+        <div>
+          <h3 style="font-size:15px;font-weight:800;margin-bottom:14px;">Recent Complaints</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th><th>Title</th><th>Department</th><th>Status</th><th>Submitted</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="dashRecentTbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3 style="font-size:15px;font-weight:800;margin-bottom:14px;">Recent Activity</h3>
+          <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:16px 18px;">
+            <div class="activity-list" id="activityList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== COMPLAINTS TABLE PAGE (shared for all/open/review/assigned/resolved) ===== -->
+    <div class="page" id="page-complaints">
+      <div class="page-title" id="complaints-page-title">All Complaints</div>
+      <div class="page-sub" id="complaints-page-sub">Manage and resolve all submitted complaints.</div>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="search-input" id="tableSearch" placeholder="Search complaints, authors, departments..." oninput="renderTable()">
+        </div>
+        <select class="filter-select" id="filterDept" onchange="renderTable()">
+          <option value="">All Departments</option>
+          <option>Food Services</option>
+          <option>Facilities Management</option>
+          <option>Computer Engineering</option>
+          <option>Information Technology</option>
+          <option>Administration Office</option>
+          <option>Library</option>
+        </select>
+        <select class="filter-select" id="filterSort" onchange="renderTable()">
+          <option value="new">Newest First</option>
+          <option value="old">Oldest First</option>
+          <option value="votes">Most Votes</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Title & Description</th>
+              <th>Department</th>
+              <th>Posted By</th>
+              <th>Status</th>
+              <th>Assigned To</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="complaintsTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="page" id="page-users">
+      <div class="page-title">User Roles</div>
+      <div class="page-sub">Promote users and manage account access across the platform.</div>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="search-input" id="userSearch" placeholder="Search by name, email, role, department..." oninput="renderUsersTable()">
+        </div>
+        <select class="filter-select" id="userRoleFilter" onchange="renderUsersTable()">
+          <option value="">All Roles</option>
+          <option value="student">Student</option>
+          <option value="staff">Staff</option>
+          <option value="dept_admin">Dept Admin</option>
+          <option value="admin">Admin</option>
+          <option value="super_admin">Super Admin</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Department</th>
+              <th>Current Role</th>
+              <th>New Role</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="usersTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+
+<!-- ===== COMPLAINT DETAIL MODAL ===== -->
+<div class="modal-bg" id="detailModal">
+  <div class="modal" style="max-width:640px;">
+    <div class="modal-head">
+      <h2 id="dm-id">Complaint Details</h2>
+      <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Status + Assign row -->
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:180px;">
+          <div class="form-label">Update Status</div>
+          <select class="form-select" id="dm-status" onchange="saveStatusChange()">
+            <option value="open">Open</option>
+            <option value="under_review">Under Review</option>
+            <option value="assigned">Assigned</option>
+            <option value="resolved">Resolved</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:180px;">
+          <div class="form-label">Assign To Staff</div>
+          <select class="form-select" id="dm-assign" onchange="saveAssignChange()">
+            <option value="">— Unassigned —</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:-4px;margin-bottom:20px;">
+        <div class="form-label">Resolution Proof Photo</div>
+        <input class="form-input" id="dm-resolution-image" type="file" accept="image/*">
+        <div class="field-hint">Add a photo before marking a complaint as resolved.</div>
+      </div>
+
+      <!-- Author reveal (admin only) -->
+      <div class="detail-section">
+        <div class="detail-section-title">Complaint Author</div>
+        <div class="author-reveal" id="dm-author-box">
+          <div class="author-reveal-icon">👤</div>
+          <div class="author-reveal-info">
+            <div class="label" id="dm-anon-label">Public Name</div>
+            <div class="name" id="dm-real-name">—</div>
+            <div class="meta" id="dm-author-meta">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Complaint info -->
+      <div class="detail-section">
+        <div class="detail-section-title">Complaint Info</div>
+        <div class="complaint-desc-box" id="dm-desc"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
+          <div class="detail-row"><span class="detail-key">Category</span><span class="detail-val" id="dm-category">—</span></div>
+          <div class="detail-row"><span class="detail-key">Department</span><span class="detail-val" id="dm-dept">—</span></div>
+          <div class="detail-row"><span class="detail-key">Submitted</span><span class="detail-val" id="dm-date">—</span></div>
+          <div class="detail-row"><span class="detail-key">Votes</span><span class="detail-val" id="dm-votes">—</span></div>
+        </div>
+        <div class="file-grid" id="dm-files" style="margin-top:14px;"></div>
+      </div>
+
+      <!-- Internal Notes -->
+      <div class="detail-section">
+        <div class="detail-section-title">Internal Notes</div>
+        <div id="dm-notes-list"></div>
+        <div style="margin-top:10px;display:flex;gap:8px;">
+          <textarea class="form-textarea" id="dm-note-input" placeholder="Add a private internal note (not visible to students)..." style="min-height:70px;flex:1;"></textarea>
+        </div>
+        <div style="margin-top:8px;text-align:right;">
+          <button class="btn-primary" onclick="submitNote()">Add Note</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<script src="js/auth-guard.js"></script>
+<script>
+  // ---- AUTH GUARD ----
+  CR.requireAdmin();
+
+  let admin = CR.getSession();
+  if (admin) {
+    applyAdminHeader(admin);
+  }
+
+  // ---- STATE ----
+  let _currentFilter = 'all'; // 'all' | 'open' | 'under_review' | 'assigned' | 'resolved'
+  let _currentComplaintId = null;
+  let _adminUsers = [];
+  let _lastUnreadNotifications = 0;
+
+  function applyAdminHeader(user) {
+    document.getElementById('adminName').textContent  = user.name || user.email;
+    document.getElementById('adminDept').textContent  = user.department || user.role;
+    document.getElementById('adminAvatar').textContent = (user.name || user.email).charAt(0).toUpperCase();
+    document.getElementById('roleBadge').textContent =
+      user.role === 'super_admin' ? 'SUPER ADMIN' :
+      user.role === 'admin' ? 'ADMIN' :
+      user.role === 'dept_admin' ? 'DEPT ADMIN' : 'STAFF';
+  }
+
+  // ---- NAVIGATION ----
+  function showPage(filter, btn) {
+    _currentFilter = filter;
+
+    // Hide all pages, show correct one
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    if (filter === 'dashboard') {
+      document.getElementById('page-dashboard').classList.add('active');
+    } else if (filter === 'users') {
+      document.getElementById('page-users').classList.add('active');
+      renderUsersTable();
+    } else {
+      document.getElementById('page-complaints').classList.add('active');
+      // Update title
+      const titles = {
+        all:          ['All Complaints',    'Manage and resolve all submitted complaints.'],
+        open:         ['Open Complaints',   'Complaints that have not yet been reviewed.'],
+        under_review: ['Under Review',      'Complaints currently being investigated.'],
+        assigned:     ['Assigned',          'Complaints assigned to a staff member.'],
+        resolved:     ['Resolved',          'Complaints that have been successfully resolved.'],
+      };
+      const [title, sub] = titles[filter] || titles['all'];
+      document.getElementById('complaints-page-title').textContent = title;
+      document.getElementById('complaints-page-sub').textContent   = sub;
+      // Clear search
+      document.getElementById('tableSearch').value = '';
+      renderTable();
+    }
+
+    // Update nav highlight
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+  }
+
+  // ---- TIME FORMAT ----
+  function timeAgo(iso) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff/60000), h = Math.floor(diff/3600000), d = Math.floor(diff/86400000);
+    if (m < 1)   return 'just now';
+    if (m < 60)  return m + 'm ago';
+    if (h < 24)  return h + 'h ago';
+    if (d < 30)  return d + 'd ago';
+    return new Date(iso).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'2-digit'});
+  }
+
+  function fmtDate(iso) {
+    return new Date(iso).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
+  }
+
+  function formatNotifTime(iso) {
+    if (!iso) return '';
+    const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+    if (diff < 1) return 'just now';
+    if (diff < 60) return diff + 'm ago';
+    if (diff < 1440) return Math.floor(diff / 60) + 'h ago';
+    return Math.floor(diff / 1440) + 'd ago';
+  }
+
+  function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function complaintScore(c) {
+    return typeof c.score === 'number' ? c.score : ((c.upvotes || 0) - (c.downvotes || 0));
+  }
+
+  function renderAdminNotifications(items, unreadCount) {
+    _lastUnreadNotifications = unreadCount || 0;
+    const badge = document.getElementById('adminNotifBadge');
+    const list = document.getElementById('adminNotifList');
+    if (badge) {
+      badge.textContent = String(_lastUnreadNotifications);
+      badge.classList.toggle('hidden', !(_lastUnreadNotifications > 0));
+    }
+    if (!list) return;
+    if (!items || !items.length) {
+      list.innerHTML = '<div class="notif-item"><div class="notif-content" style="flex:1"><p>No notifications yet.</p></div></div>';
+      return;
+    }
+    list.innerHTML = items.map(item =>
+      '<div class="notif-item ' + (item.isRead ? '' : 'unread') + '">' +
+        '<div class="notif-icon">' + (item.isRead ? '🔔' : '📢') + '</div>' +
+        '<div class="notif-content" style="flex:1">' +
+          '<p>' + esc(item.message) + '</p>' +
+          '<span>' + esc(formatNotifTime(item.createdAt)) + '</span>' +
+        '</div>' +
+        (item.isRead ? '' : '<div class="notif-dot"></div>') +
+      '</div>'
+    ).join('');
+  }
+
+  async function loadAdminNotifications() {
+    const result = await CR.fetchNotifications();
+    if (!result.ok) return;
+    renderAdminNotifications(result.notifications || [], result.unreadCount || 0);
+  }
+
+  async function markAdminNotificationsRead() {
+    const result = await CR.markNotificationsRead();
+    if (!result.ok) {
+      showToast(result.error || 'Could not update notifications');
+      return;
+    }
+    renderAdminNotifications(CR.getNotifications(), 0);
+  }
+
+  function toggleNotifPanel() {
+    const panel = document.getElementById('adminNotifPanel');
+    if (!panel) return;
+    panel.classList.toggle('hidden');
+  }
+
+  // ---- STATUS BADGE HTML ----
+  function statusBadge(s) {
+    const map = {
+      open:         ['b-open',         'Open'],
+      under_review: ['b-under_review', 'Under Review'],
+      assigned:     ['b-assigned',     'Assigned'],
+      resolved:     ['b-resolved',     'Resolved'],
+    };
+    const [cls, label] = map[s] || ['b-open','Open'];
+    return '<span class="badge ' + cls + '">' + label + '</span>';
+  }
+
+  // ---- UPDATE SIDEBAR COUNTS ----
+  function updateCounts() {
+    const all = CR.getComplaints();
+    document.getElementById('navCountAll').textContent      = all.length;
+    document.getElementById('navCountOpen').textContent     = all.filter(c=>c.status==='open').length;
+    document.getElementById('navCountReview').textContent   = all.filter(c=>c.status==='under_review').length;
+    document.getElementById('navCountAssigned').textContent = all.filter(c=>c.status==='assigned').length;
+    document.getElementById('navCountResolved').textContent = all.filter(c=>c.status==='resolved').length;
+    // dashboard stats
+    document.getElementById('ds-total').textContent   = all.length;
+    document.getElementById('ds-open').textContent    = all.filter(c=>c.status==='open').length;
+    document.getElementById('ds-review').textContent  = all.filter(c=>c.status==='under_review').length;
+    document.getElementById('ds-resolved').textContent= all.filter(c=>c.status==='resolved').length;
+  }
+
+  // ---- RENDER DASHBOARD RECENT TABLE ----
+  function renderDashRecent() {
+    const tbody = document.getElementById('dashRecentTbody');
+    const all   = CR.getComplaints().slice(0, 8);
+    if (!all.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No complaints yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = all.map(c => {
+      const realAuthor = CR.getRealAuthor(c);
+      return '<tr onclick="openDetail(\'' + c.id + '\')">' +
+        '<td style="font-weight:700;font-size:12px;color:var(--text-3)">' + esc(c.id) + '</td>' +
+        '<td class="td-title">' + esc(c.title.length>50?c.title.slice(0,50)+'…':c.title) + '</td>' +
+        '<td>' + esc(c.department) + '</td>' +
+        '<td>' + statusBadge(c.status) + '</td>' +
+        '<td style="font-size:12px;color:var(--text-3)">' + timeAgo(c.createdAt) + '</td>' +
+        '<td><button class="action-icon" title="View"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  // ---- RENDER ACTIVITY ----
+  function renderActivity() {
+    const el   = document.getElementById('activityList');
+    const all  = CR.getComplaints().slice().sort((a,b) => new Date(b.updatedAt)-new Date(a.updatedAt)).slice(0,8);
+    const dotColors = { open:'var(--open)', under_review:'var(--review)', assigned:'var(--assigned)', resolved:'var(--resolved)' };
+    const statusLabels = { open:'opened', under_review:'marked Under Review', assigned:'assigned', resolved:'marked Resolved' };
+    el.innerHTML = all.map(c =>
+      '<div class="activity-item">' +
+        '<div class="activity-dot" style="background:' + (dotColors[c.status]||'#ccc') + '"></div>' +
+        '<div class="activity-text"><strong>' + esc(c.id) + '</strong> — ' + (statusLabels[c.status]||c.status) +
+          (c.assignedName ? ' to <strong>' + esc(c.assignedName) + '</strong>' : '') + '</div>' +
+        '<div class="activity-time">' + timeAgo(c.updatedAt) + '</div>' +
+      '</div>'
+    ).join('') || '<div style="font-size:13px;color:var(--text-3)">No recent activity.</div>';
+  }
+
+  function roleLabel(role) {
+    return {
+      student: 'Student',
+      staff: 'Staff',
+      dept_admin: 'Dept Admin',
+      admin: 'Admin',
+      super_admin: 'Super Admin',
+    }[role] || role;
+  }
+
+  function renderUsersTable() {
+    const tbody = document.getElementById('usersTbody');
+    if (!tbody) return;
+
+    const q = (document.getElementById('userSearch')?.value || '').toLowerCase();
+    const roleFilter = document.getElementById('userRoleFilter')?.value || '';
+    let users = _adminUsers.slice();
+
+    if (roleFilter) {
+      users = users.filter(u => u.role === roleFilter);
+    }
+    if (q) {
+      users = users.filter(u =>
+        (u.name || '').toLowerCase().includes(q) ||
+        (u.email || '').toLowerCase().includes(q) ||
+        (u.role || '').toLowerCase().includes(q) ||
+        (u.department || '').toLowerCase().includes(q)
+      );
+    }
+
+    if (!users.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No users found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = users.map(u => {
+      const currentRole = esc(roleLabel(u.role));
+      const disableSuperAdminChange = u.role === 'super_admin';
+      const options = [
+        ['student', 'Student'],
+        ['staff', 'Staff'],
+        ['dept_admin', 'Dept Admin'],
+        ['admin', 'Admin'],
+        ['super_admin', 'Super Admin'],
+      ].map(([value, label]) =>
+        '<option value="' + value + '"' + (u.role === value ? ' selected' : '') + '>' + label + '</option>'
+      ).join('');
+
+      return '<tr>' +
+        '<td><div style="font-weight:700;color:var(--text)">' + esc(u.name || 'Unnamed User') + '</div></td>' +
+        '<td style="font-size:13px;color:var(--text-2)">' + esc(u.email || '') + '</td>' +
+        '<td>' + esc(u.department || '—') + '</td>' +
+        '<td><span class="badge b-open" style="text-transform:none;letter-spacing:0">' + currentRole + '</span></td>' +
+        '<td><select class="filter-select" id="roleSelect-' + esc(String(u.id)) + '"' + (disableSuperAdminChange ? ' disabled' : '') + '>' + options + '</select></td>' +
+        '<td><button class="btn-primary"' + (disableSuperAdminChange ? ' disabled style="opacity:0.55;cursor:not-allowed;"' : '') + ' onclick="promoteUser(\'' + esc(String(u.id)) + '\')">Save Role</button></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  async function loadUsers() {
+    if (!['admin', 'dept_admin', 'super_admin'].includes(admin?.role)) return;
+    const result = await CR.fetchAdminUsers();
+    if (!result.ok) {
+      if (admin?.role === 'super_admin') showToast(result.error || 'Could not load users');
+      return;
+    }
+    _adminUsers = result.users || [];
+    renderUsersTable();
+  }
+
+  async function promoteUser(userId) {
+    const select = document.getElementById('roleSelect-' + userId);
+    if (!select) return;
+    const newRole = select.value;
+    const result = await CR.updateUserRole(userId, newRole);
+    if (!result.ok) {
+      showToast(result.error || 'Could not update role');
+      return;
+    }
+
+    _adminUsers = _adminUsers.map(u => String(u.id) === String(userId) ? result.user : u);
+    renderUsersTable();
+    showToast('Role updated to ' + roleLabel(result.user.role));
+  }
+
+  // ---- RENDER COMPLAINTS TABLE ----
+  function renderTable() {
+    const tbody     = document.getElementById('complaintsTbody');
+    const query     = (document.getElementById('tableSearch').value||'').toLowerCase();
+    const deptFilter= document.getElementById('filterDept').value;
+    const sortBy    = document.getElementById('filterSort').value;
+
+    let complaints = CR.getComplaints();
+
+    // Filter by current page
+    if (_currentFilter !== 'all') {
+      complaints = complaints.filter(c => c.status === _currentFilter);
+    }
+    // Filter by dept
+    if (deptFilter) {
+      complaints = complaints.filter(c => c.department === deptFilter);
+    }
+    // Search
+    if (query) {
+      complaints = complaints.filter(c => {
+        const realAuthor = CR.getRealAuthor(c).toLowerCase();
+        return c.title.toLowerCase().includes(query) ||
+               c.description.toLowerCase().includes(query) ||
+               c.department.toLowerCase().includes(query) ||
+               c.id.toLowerCase().includes(query) ||
+               realAuthor.includes(query);
+      });
+    }
+    // Sort
+    if (sortBy === 'old')   complaints.sort((a,b) => new Date(a.createdAt)-new Date(b.createdAt));
+    else if (sortBy === 'votes') complaints.sort((a,b) => complaintScore(b) - complaintScore(a));
+    else complaints.sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt));
+
+    if (!complaints.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No complaints found matching your filters.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = complaints.map(c => {
+      const realAuthor = CR.getRealAuthor(c);
+      const isAnon     = c.anonymous;
+      const authorHtml = isAnon
+        ? esc(realAuthor) + ' <span class="tag-anon">ANON</span>'
+        : esc(realAuthor);
+
+      return '<tr onclick="openDetail(\'' + c.id + '\')">' +
+        '<td style="font-weight:700;font-size:12px;color:var(--text-3);white-space:nowrap">' + esc(c.id) + '</td>' +
+        '<td class="td-title">' + esc(c.title.length>55?c.title.slice(0,55)+'…':c.title) +
+          '<p>' + esc(c.description.slice(0,80)) + '…</p></td>' +
+        '<td style="white-space:nowrap;font-size:13px">' + esc(c.department) + '</td>' +
+        '<td>' + authorHtml + '</td>' +
+        '<td>' + statusBadge(c.status) + '</td>' +
+        '<td style="font-size:13px;color:var(--text-2)">' + (c.assignedName ? esc(c.assignedName) : '<span style="color:var(--text-3)">—</span>') + '</td>' +
+        '<td style="font-size:12px;color:var(--text-3);white-space:nowrap">' + timeAgo(c.createdAt) + '</td>' +
+        '<td onclick="event.stopPropagation()">' +
+          '<button class="action-icon" title="View details" onclick="openDetail(\'' + c.id + '\')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
+          '<button class="action-icon" title="Delete complaint" onclick="deleteComplaintFromAdmin(\'' + c.id + '\')" style="margin-left:6px;color:#dc2626;border-color:rgba(220,38,38,.25)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/></svg></button>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  // ---- OPEN DETAIL MODAL ----
+  function openDetail(id) {
+    const complaints = CR.getComplaints();
+    const c = complaints.find(x => x.id === id);
+    if (!c) return;
+    _currentComplaintId = id;
+
+    document.getElementById('dm-id').textContent = c.id + ' — ' + c.title.slice(0,40) + (c.title.length>40?'…':'');
+    document.getElementById('dm-desc').textContent = c.description;
+    document.getElementById('dm-category').textContent = c.category || '—';
+    document.getElementById('dm-dept').textContent = c.department || '—';
+    document.getElementById('dm-date').textContent = fmtDate(c.createdAt);
+    document.getElementById('dm-votes').textContent = (c.upvotes||0) + ' up / ' + (c.downvotes||0) + ' down';
+    document.getElementById('dm-status').value = c.status || 'open';
+    document.getElementById('dm-resolution-image').value = '';
+    const filesEl = document.getElementById('dm-files');
+    const fileLinks = [];
+    if (c.imageUrl) {
+      fileLinks.push('<a class="file-chip" href="' + esc(c.imageUrl) + '" target="_blank" rel="noopener">📎 Complaint evidence</a>');
+    }
+    if (c.resolutionImageUrl) {
+      fileLinks.push('<a class="file-chip" href="' + esc(c.resolutionImageUrl) + '" target="_blank" rel="noopener">✅ Resolution proof</a>');
+    }
+    filesEl.innerHTML = fileLinks.join('') || '<div class="empty-notes">No files attached to this complaint yet.</div>';
+
+    // Populate staff dropdown
+    const assignSel = document.getElementById('dm-assign');
+    assignSel.innerHTML = '<option value="">— Unassigned —</option>';
+    CR.getStaffList().forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.name + ' (' + s.department + ')';
+      if (c.assignedTo === s.id) opt.selected = true;
+      assignSel.appendChild(opt);
+    });
+
+    // Author reveal
+    const realAuthor = CR.getRealAuthor(c);
+    const users      = CR.getUsers();
+    const authorUser = users.find(u => u.id === c.authorId);
+    document.getElementById('dm-anon-label').textContent = c.anonymous ? '🔒 Anonymous Poster (Real Identity)' : 'Posted By';
+    document.getElementById('dm-real-name').textContent  = realAuthor;
+    document.getElementById('dm-author-meta').textContent = authorUser
+      ? (authorUser.email + (authorUser.department ? ' · ' + authorUser.department : '') + (authorUser.rollNo ? ' · Roll: ' + authorUser.rollNo : ''))
+      : (c.anonymous ? 'Seed data – no user record' : '');
+
+    // Notes
+    renderNotes(c);
+
+    document.getElementById('detailModal').classList.add('open');
+  }
+
+  function renderNotes(c) {
+    const el    = document.getElementById('dm-notes-list');
+    const notes = c.internalNotes || [];
+    if (!notes.length) {
+      el.innerHTML = '<div class="empty-notes">No internal notes yet. Add one below.</div>';
+      return;
+    }
+    el.innerHTML = notes.map(n =>
+      '<div class="note-item">' +
+        '<div class="note-by">' + esc(n.by) + '</div>' +
+        '<div class="note-text">' + esc(n.text) + '</div>' +
+        '<div class="note-time">' + fmtDate(n.at) + '</div>' +
+      '</div>'
+    ).join('');
+  }
+
+  async function saveStatusChange() {
+    if (!_currentComplaintId) return;
+    const newStatus = document.getElementById('dm-status').value;
+    const resolutionImage = document.getElementById('dm-resolution-image').files?.[0] || null;
+    const currentComplaint = CR.getComplaints().find(x => String(x.id) === String(_currentComplaintId));
+    if (newStatus === 'resolved' && !resolutionImage && !currentComplaint?.resolutionImageUrl) {
+      showToast('Add a resolution proof photo before marking this complaint resolved.');
+      return;
+    }
+    const result = await CR.updateComplaintStatus(_currentComplaintId, newStatus, resolutionImage);
+    if (!result.ok) {
+      showToast(result.error || 'Could not update complaint status');
+      return;
+    }
+    openDetail(String(_currentComplaintId));
+    updateCounts();
+    renderTable();
+    renderDashRecent();
+    renderActivity();
+    loadAdminNotifications();
+    showToast('✅ Status updated to "' + newStatus.replace('_',' ') + '"');
+  }
+
+  async function saveAssignChange() {
+    if (!_currentComplaintId) return;
+    const staffId = document.getElementById('dm-assign').value;
+    if (!staffId) return;
+    const result = await CR.assignComplaint(_currentComplaintId, staffId);
+    if (!result.ok) {
+      showToast(result.error || 'Could not assign complaint');
+      return;
+    }
+    document.getElementById('dm-status').value = result.complaint.status || 'assigned';
+    openDetail(String(_currentComplaintId));
+    updateCounts();
+    renderTable();
+    renderDashRecent();
+    renderActivity();
+    loadAdminNotifications();
+    const staff = CR.getUsers().find(u => u.id === staffId);
+    showToast('👤 Assigned to ' + (staff ? staff.name : 'staff'));
+  }
+
+  async function submitNote() {
+    const text = document.getElementById('dm-note-input').value.trim();
+    if (!text || !_currentComplaintId) return;
+    const result = await CR.addInternalNote(_currentComplaintId, text);
+    if (!result.ok) {
+      showToast(result.error || 'Could not add note');
+      return;
+    }
+    document.getElementById('dm-note-input').value = '';
+    const c = CR.getComplaints().find(x => x.id === _currentComplaintId);
+    renderNotes(c);
+    loadAdminNotifications();
+    showToast('📝 Note added');
+  }
+
+  async function deleteComplaintFromAdmin(complaintId) {
+    const ok = window.confirm('Delete this complaint permanently?');
+    if (!ok) return;
+
+    const result = await CR.deleteComplaint(complaintId);
+    if (!result.ok) {
+      showToast(result.error || 'Could not delete complaint');
+      return;
+    }
+
+    if (_currentComplaintId && String(_currentComplaintId) === String(complaintId)) {
+      closeModal('detailModal');
+    }
+
+    updateCounts();
+    renderTable();
+    renderDashRecent();
+    renderActivity();
+    showToast('Complaint deleted.');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    _currentComplaintId = null;
+  }
+
+  // close on bg click
+  document.getElementById('detailModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('detailModal');
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.topbar-notif-wrap')) {
+      document.getElementById('adminNotifPanel')?.classList.add('hidden');
+    }
+  });
+
+  // ---- TOAST ----
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+
+  // ---- INIT ----
+  async function init() {
+    const sessionResult = await CR.refreshSession();
+    if (sessionResult.ok) {
+      admin = sessionResult.user;
+      applyAdminHeader(admin);
+    }
+
+    await CR.refreshComplaints();
+    await loadUsers();
+    await loadAdminNotifications();
+
+    if (admin && admin.role === 'super_admin') {
+      document.getElementById('navUsersBtn').classList.remove('hidden');
+    }
+    updateCounts();
+    renderDashRecent();
+    renderActivity();
+  }
+
+  init();
+</script>
+</body>
+</html>
