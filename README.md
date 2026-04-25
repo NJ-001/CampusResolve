@@ -227,4 +227,7 @@ gunicorn app:app
 
 ## License
 
-This project is currently not licensed. Add a license file before publishing if you want others to use, modify, or distribute it.
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
