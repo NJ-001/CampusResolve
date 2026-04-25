@@ -204,10 +204,22 @@ Make sure this directory exists and is writable in production.
 
 ## Deployment Notes
 
-- Use PostgreSQL in production by setting `DATABASE_URL`.
-- Replace local development secrets with secure environment-based secrets.
-- Run with a production server such as Gunicorn.
-- Configure upload storage carefully if deploying to a platform with an ephemeral filesystem.
+This project is deployed using Render.
+
+Recommended Render settings:
+
+```text
+Root Directory: Backend
+Build Command: pip install -r requirements.txt
+Start Command: gunicorn app:app
+```
+
+For production deployment:
+
+- Use Render PostgreSQL or another PostgreSQL database by setting `DATABASE_URL`.
+- Replace local development secrets with secure environment variables.
+- Use Gunicorn as the production server.
+- Configure upload storage carefully because Render's filesystem can be ephemeral.
 - Restrict CORS settings before production use if the frontend and backend are hosted on known domains.
 
 Example Gunicorn command:
@@ -227,7 +239,4 @@ gunicorn app:app
 
 ## License
 
-## License
-
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
